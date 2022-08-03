@@ -9,6 +9,7 @@ int Fibonacci1(int n)
 	else
 		return Fibonacci1(n - 1) + Fibonacci1(n - 2);
 }//递归法（重复计算次数过多，效率慢）
+
 int Fibonacci2(int n)
 {
 	int a = 1;
@@ -23,6 +24,7 @@ int Fibonacci2(int n)
 	}
 	return c;
 }//迭代法（不需重复计算）
+
 int main()
 {
 	int n = 0;
