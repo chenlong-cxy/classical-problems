@@ -322,77 +322,211 @@
 //};
 
 
-#include <iostream>
-#include <string>
-using namespace std;
-//回溯+双指针
+////字符串交织
+//#include <iostream>
+//#include <string>
+//using namespace std;
+////回溯+双指针
+//class Solution {
+//public:
+//	bool isInterleave(string s1, string s2, string s3) {
+//		if (s1.size() + s2.size() != s3.size())
+//			return false;
+//		return dfs(s1, s2, s3, 0, 0, 0);
+//	}
+//	bool dfs(const string& s1, const string& s2, const string& s3, int idx1, int idx2, int idx3) {
+//		if (idx3 == s3.size())
+//			return true;
+//		if (idx1 == s1.size() && s2[idx2] != s3[idx3])
+//			return false;
+//		if (idx2 == s2.size() && s1[idx1] != s3[idx3])
+//			return false;
+//		if (idx1 < s1.size() && s1[idx1] == s3[idx3] && dfs(s1, s2, s3, idx1 + 1, idx2, idx3 + 1))
+//			return true;
+//		if (idx2 < s2.size() && s2[idx2] == s3[idx3] && dfs(s1, s2, s3, idx1, idx2 + 1, idx3 + 1))
+//			return true;
+//		return false;
+//	}
+//};
+////动态规划
+//class Solution {
+//public:
+//	bool isInterleave(string s1, string s2, string s3) {
+//		int m = s1.size(), n = s2.size();
+//		if (m + n != s3.size())
+//			return false;
+//		//dp[i][j]表示s1的前i个字符和s2的前j个字符能否交织组成s3的前i+j个字符
+//		vector<vector<int>> dp(m + 1, vector<int>(n + 1, false));
+//		dp[0][0] = true; //初始条件
+//		for (int i = 0; i <= m; i++) { //结束条件
+//			for (int j = 0; j <= n; j++) { //结束条件
+//				//状态转移方程（注意|=，避免第二次的false覆盖第一次的true）
+//				if (i > 0 )
+//					dp[i][j] |= (dp[i - 1][j] && s1[i - 1] == s3[i + j - 1]);
+//				if (j > 0)
+//					dp[i][j] |= (dp[i][j - 1] && s2[j - 1] == s3[i + j - 1]);
+//			}
+//		}
+//		return dp[m][n];
+//	}
+//};
+////滚动数组
+//class Solution {
+//public:
+//	bool isInterleave(string s1, string s2, string s3) {
+//		int m = s1.size(), n = s2.size();
+//		if (m + n != s3.size())
+//			return false;
+//		//dp[i][j]表示s1的前i个字符和s2的前j个字符能否交织组成s3的前i+j个字符
+//		vector<int> f(n + 1, false);
+//		f[0] = true; //初始条件
+//		for (int i = 0; i <= m; i++) { //结束条件
+//			for (int j = 0; j <= n; j++) { //结束条件
+//				//状态转移方程（注意|=，避免第二次的false覆盖第一次的true）
+//				if (i > 0)
+//					f[j] &= (s1[i - 1] == s3[i + j - 1]); //如果s1[i-1] != s3[i+j-1]则相当于将f[j]设置为false
+//				if (j > 0)
+//					f[j] |= (f[j - 1] && s2[j - 1] == s3[i + j - 1]);
+//			}
+//		}
+//		return f[n];
+//	}
+//};
+//int main()
+//{
+//	cout << Solution().isInterleave("", "b", "b") << endl;
+//	return 0;
+//}
+
+
+////子序列的数目
+//class Solution {
+//public:
+//	int numDistinct(string s, string t) {
+//		int count = 0;
+//		string tmp;
+//		dfs(s, t, tmp, 0, count);
+//		return count;
+//	}
+//	void dfs(const string& s, const string& t, string& tmp, int cur, int& count) {
+//		if (cur == s.size()) {
+//			if (tmp == t)
+//				count++;
+//			return;
+//		}
+//		tmp += s[cur];
+//		dfs(s, t, tmp, cur + 1, count);
+//		tmp.pop_back(); //回溯
+//		dfs(s, t, tmp, cur + 1, count);
+//	}
+//};
+////从后往前进行匹配
+//class Solution {
+//public:
+//	int numDistinct(string s, string t) {
+//		int m = s.size(), n = t.size();
+//		if (m < n) //s的长度比t小
+//			return 0;
+//		//dp[i][j]表示在s[i:]的子序列中t[j:]出现的个数
+//		vector<vector<unsigned long long>> dp(m + 1, vector<unsigned long long>(n + 1, 0));
+//		//初始条件
+//		for (int i = 0; i < m + 1; i++) //空字符串t是任何字符串s的子序列
+//			dp[i][n] = 1;
+//		for (int i = 0; i < n; i++) //非空字符串t不是空字符串s的子序列
+//			dp[m][i] = 0;
+//		for (int i = m - 1; i >= 0; i--) { //结束条件
+//			for (int j = n - 1; j >= 0; j--) { //结束条件
+//				if (s[i] == t[j]) //s[i]与t[j]匹配
+//					dp[i][j] = dp[i + 1][j + 1] + dp[i + 1][j]; //dp[i+1][j+1]表示让s[i]和t[j]匹配的方案数，dp[i+1][j]表示不让s[i]和t[j]匹配的方案数
+//				else
+//					dp[i][j] = dp[i + 1][j]; //只能考虑dp[i+1][j]
+//			}
+//		}
+//		return dp[0][0]; //在s[0:]的子序列中t[0:]出现的个数
+//	}
+//};
+////从前往后进行匹配
+//class Solution {
+//public:
+//	int numDistinct(string s, string t) {
+//		int m = s.size(), n = t.size();
+//		if (m < n)
+//			return 0;
+//		//dp[i][j]表示s的前i个字符组成的字符串的子序列中(t的前j个字符组成的字符串)出现的个数
+//		vector<vector<unsigned long long>> dp(m + 1, vector<unsigned long long>(n + 1, 0));
+//		//初始条件
+//		for (int i = 0; i < m + 1; i++) //空字符串t是任何字符串s的子序列
+//			dp[i][0] = 1;
+//		for (int i = 1; i < n + 1; i++) //非空字符串t不是空字符串s的子序列
+//			dp[0][i] = 0;
+//		for (int i = 1; i < m + 1; i++) {
+//			for (int j = 1; j < n + 1; j++) {
+//				if (s[i - 1] == t[j - 1]) //s的第i-1个字符和t的第j-1个字符匹配
+//					dp[i][j] = dp[i - 1][j - 1] + dp[i - 1][j]; //让s的第i-1个字符匹配或不让
+//				else
+//					dp[i][j] = dp[i - 1][j]; //只能不让s的第i-1个字符匹配
+//			}
+//		}
+//		return dp[m][n];
+//	}
+//};
+
+
+////路径的数目
+//class Solution {
+//public:
+//	int uniquePaths(int m, int n) {
+//		//dp[i][j]表示从(0,0)到达(i,j)位置的路径数目
+//		vector<vector<int>> dp(m, vector<int>(n, 1)); //(0,x)和(x,0)位置的方案数都设置为1
+//		for (int i = 1; i < m; i++) {
+//			for (int j = 1; j < n; j++) {
+//				dp[i][j] = dp[i - 1][j] + dp[i][j - 1]; //(i,j)位置只能从(i-1,j)或(i,j-1)位置到达
+//			}
+//		}
+//		return dp[m - 1][n - 1];
+//	}
+//};
+//class Solution {
+//public:
+//	int uniquePaths(int m, int n) {
+//		long long ans = 1;
+//		for (int x = n, y = 1; y < m; x++, y++) {
+//			ans = ans * x / y; //组合数学
+//		}
+//		return ans;
+//	}
+//};
+//class Solution {
+//public:
+//	int uniquePaths(int m, int n) {
+//		//滚动数组
+//		vector<int> dp(n, 1);
+//		for (int i = 1; i < m; i++) {
+//			for (int j = 1; j < n; j++) {
+//				dp[j] = dp[j - 1] + dp[j];
+//			}
+//		}
+//		return dp[n - 1];
+//	}
+//};
+
+
+//最小路径之和
 class Solution {
 public:
-	bool isInterleave(string s1, string s2, string s3) {
-		if (s1.size() + s2.size() != s3.size())
-			return false;
-		return dfs(s1, s2, s3, 0, 0, 0);
-	}
-	bool dfs(const string& s1, const string& s2, const string& s3, int idx1, int idx2, int idx3) {
-		if (idx3 == s3.size())
-			return true;
-		if (idx1 == s1.size() && s2[idx2] != s3[idx3])
-			return false;
-		if (idx2 == s2.size() && s1[idx1] != s3[idx3])
-			return false;
-		if (idx1 < s1.size() && s1[idx1] == s3[idx3] && dfs(s1, s2, s3, idx1 + 1, idx2, idx3 + 1))
-			return true;
-		if (idx2 < s2.size() && s2[idx2] == s3[idx3] && dfs(s1, s2, s3, idx1, idx2 + 1, idx3 + 1))
-			return true;
-		return false;
-	}
-};
-//动态规划
-class Solution {
-public:
-	bool isInterleave(string s1, string s2, string s3) {
-		int m = s1.size(), n = s2.size();
-		if (m + n != s3.size())
-			return false;
-		//dp[i][j]表示s1的前i个字符和s2的前j个字符能否交织组成s3的前i+j个字符
-		vector<vector<int>> dp(m + 1, vector<int>(n + 1, false));
-		dp[0][0] = true; //初始条件
-		for (int i = 0; i <= m; i++) { //结束条件
-			for (int j = 0; j <= n; j++) { //结束条件
-				//状态转移方程（注意|=，避免第二次的false覆盖第一次的true）
-				if (i > 0 )
-					dp[i][j] |= (dp[i - 1][j] && s1[i - 1] == s3[i + j - 1]);
-				if (j > 0)
-					dp[i][j] |= (dp[i][j - 1] && s2[j - 1] == s3[i + j - 1]);
+	int minPathSum(vector<vector<int>>& grid) {
+		int m = grid.size(), n = grid[0].size();
+		for (int i = 1; i < m; i++) { //(i,0)只能从(i-1,0)到达
+			grid[i][0] += grid[i - 1][0];
+		}
+		for (int i = 1; i < n; i++) { //(0,i)只能从(0,i-1)到达
+			grid[0][i] += grid[0][i - 1];
+		}
+		for (int i = 1; i < m; i++) {
+			for (int j = 1; j < n; j++) {
+				grid[i][j] += min(grid[i - 1][j], grid[i][j - 1]); //(i,j)可以从(i-1,j)或(i,j-1)到达，取较小值
 			}
 		}
-		return dp[m][n];
+		return grid[m - 1][n - 1];
 	}
 };
-//滚动数组
-class Solution {
-public:
-	bool isInterleave(string s1, string s2, string s3) {
-		int m = s1.size(), n = s2.size();
-		if (m + n != s3.size())
-			return false;
-		//dp[i][j]表示s1的前i个字符和s2的前j个字符能否交织组成s3的前i+j个字符
-		vector<int> f(n + 1, false);
-		f[0] = true; //初始条件
-		for (int i = 0; i <= m; i++) { //结束条件
-			for (int j = 0; j <= n; j++) { //结束条件
-				//状态转移方程（注意|=，避免第二次的false覆盖第一次的true）
-				if (i > 0)
-					f[j] &= (s1[i - 1] == s3[i + j - 1]); //如果s1[i-1] != s3[i+j-1]则相当于将f[j]设置为false
-				if (j > 0)
-					f[j] |= (f[j - 1] && s2[j - 1] == s3[i + j - 1]);
-			}
-		}
-		return f[n];
-	}
-};
-int main()
-{
-	cout << Solution().isInterleave("", "b", "b") << endl;
-	return 0;
-}
