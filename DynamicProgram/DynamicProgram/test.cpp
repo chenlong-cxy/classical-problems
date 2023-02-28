@@ -511,22 +511,236 @@
 //};
 
 
-//最小路径之和
+////最小路径之和
+//class Solution {
+//public:
+//	int minPathSum(vector<vector<int>>& grid) {
+//		int m = grid.size(), n = grid[0].size();
+//		for (int i = 1; i < m; i++) { //(i,0)只能从(i-1,0)到达
+//			grid[i][0] += grid[i - 1][0];
+//		}
+//		for (int i = 1; i < n; i++) { //(0,i)只能从(0,i-1)到达
+//			grid[0][i] += grid[0][i - 1];
+//		}
+//		for (int i = 1; i < m; i++) {
+//			for (int j = 1; j < n; j++) {
+//				grid[i][j] += min(grid[i - 1][j], grid[i][j - 1]); //(i,j)可以从(i-1,j)或(i,j-1)到达，取较小值
+//			}
+//		}
+//		return grid[m - 1][n - 1];
+//	}
+//};
+
+
+////三角形中最小路径之和
+//class Solution {
+//public:
+//	int minimumTotal(vector<vector<int>>& triangle) {
+//		int n = triangle.size();
+//		//dp[i][j]表示从顶部到(i,j)位置的最小路径和
+//		vector<vector<int>> dp(n, vector<int>(n, 0));
+//		dp[0][0] = triangle[0][0]; //初始条件
+//		for (int i = 1; i < n; i++) {
+//			dp[i][0] = dp[i - 1][0] + triangle[i][0]; //(i,0)只能从(i-1,0)到达
+//			for (int j = 1; j < i; j++) {
+//				//(i,j)选择(i-1,j-1)和(i-1,j)中路径和较小的位置到达
+//				dp[i][j] = min(dp[i - 1][j - 1], dp[i - 1][j]) + triangle[i][j];
+//			}
+//			dp[i][i] = dp[i - 1][i - 1] + triangle[i][i]; //(i,i)只能从(i-1,i-1)到达
+//		}
+//		//选择最后一行中较小的路径和
+//		int minSum = INT_MAX;
+//		for (int i = 0; i < n; i++) {
+//			minSum = min(minSum, dp[n - 1][i]);
+//		}
+//		return minSum;
+//	}
+//};
+////滚动数组
+//class Solution {
+//public:
+//	int minimumTotal(vector<vector<int>>& triangle) {
+//		int n = triangle.size();
+//		vector<int> arr;
+//		arr.push_back(triangle[0][0]);
+//		for (int i = 1; i < n; i++) {
+//			vector<int> tmp(i + 1, 0);
+//			tmp[0] = arr[0] + triangle[i][0];
+//			for (int j = 1; j < i; j++) {
+//				tmp[j] = min(arr[j - 1], arr[j]) + triangle[i][j];
+//			}
+//			tmp[i] = arr[i - 1] + triangle[i][i];
+//			arr = tmp;
+//		}
+//		int minSum = INT_MAX;
+//		for (const auto& e : arr) {
+//			minSum = min(minSum, e);
+//		}
+//		return minSum;
+//	}
+//};
+////一维数组
+//class Solution {
+//public:
+//	int minimumTotal(vector<vector<int>>& triangle) {
+//		int n = triangle.size();
+//		vector<int> dp(n, 0);
+//		dp[0] = triangle[0][0];
+//		for (int i = 1; i < n; i++) {
+//			dp[i] = dp[i - 1] + triangle[i][i];
+//			for (int j = i - 1; j >= 1; j--) {
+//				dp[j] = min(dp[j], dp[j - 1]) + triangle[i][j];
+//			}
+//			dp[0] = dp[0] + triangle[i][0];
+//		}
+//		int minSum = INT_MAX;
+//		for (const auto& e : dp) {
+//			minSum = min(minSum, e);
+//		}
+//		return minSum;
+//	}
+//};
+
+
+////分割等和子集
+//class Solution {
+//public:
+//	bool canPartition(vector<int>& nums) {
+//		int n = nums.size();
+//		if (n < 2) //数组无法进行分割
+//			return false;
+//		int sum = 0, maxNum = INT_MIN;
+//		for (const auto& num : nums) {
+//			maxNum = max(maxNum, num);
+//			sum += num;
+//		}
+//		int target = sum / 2;
+//		if (sum % 2 == 1 || maxNum > target) //数组中的元素和为奇数或数组中的最大元素大于元素和的一半
+//			return false;
+//		//dp[i][j]表示nums中下标从0到i的的元素能否组成j
+//		vector<vector<bool>> dp(n, vector<bool>(target + 1, false));
+//		dp[0][nums[0]] = true;
+//		for (int i = 1; i < n; i++) {
+//			for (int j = 0; j <= target; j++) {
+//				if (j == 0) { //任何序列不选取任何数即可组成0
+//					dp[i][j] = true;
+//				}
+//				else if (nums[i] > j) { //只能看0到i-1的数能否组成j
+//					dp[i][j] = dp[i - 1][j];
+//				}
+//				else { //0到i-1的数能组成j或0到i-1的数能组成j-当前数
+//					dp[i][j] = dp[i - 1][j] | dp[i - 1][j - nums[i]];
+//				}
+//			}
+//		}
+//		return dp[n - 1][target]; //0到n-1的数能否组成target
+//	}
+//};
+////降为一维数组
+//class Solution {
+//public:
+//	bool canPartition(vector<int>& nums) {
+//		int n = nums.size();
+//		if (n < 2)
+//			return false;
+//		int sum = 0, maxNum = INT_MIN;
+//		for (const auto& num : nums) {
+//			sum += num;
+//			maxNum = max(maxNum, num);
+//		}
+//		int target = sum / 2;
+//		if (sum & 1 == 1 || maxNum > target)
+//			return false;
+//		vector<bool> dp(target + 1, false);
+//		dp[0] = true;
+//		dp[nums[0]] = true; //nums[0]不会大于target
+//		for (int i = 1; i < n; i++) {
+//			for (int j = target; j >= 1; j--) { //需要从后往前进行计算，避免dp[j]之前的值在使用之前被更新
+//				if (nums[i] > j)
+//					dp[j] = dp[j];
+//				else
+//					dp[j] = dp[j] | dp[j - nums[i]];
+//			}
+//		}
+//		return dp[target];
+//	}
+//};
+
+
+//加减的目标值
+//回溯
 class Solution {
 public:
-	int minPathSum(vector<vector<int>>& grid) {
-		int m = grid.size(), n = grid[0].size();
-		for (int i = 1; i < m; i++) { //(i,0)只能从(i-1,0)到达
-			grid[i][0] += grid[i - 1][0];
+	int findTargetSumWays(vector<int>& nums, int target) {
+		int count = 0;
+		dfs(nums, 0, target, 0, count);
+		return count;
+	}
+	void dfs(const vector<int>& nums, int cur, int target, int tmp, int& count) {
+		if (cur == nums.size()) {
+			if (tmp == target)
+				count++;
+			return;
 		}
-		for (int i = 1; i < n; i++) { //(0,i)只能从(0,i-1)到达
-			grid[0][i] += grid[0][i - 1];
+		dfs(nums, cur + 1, target, tmp + nums[cur], count); //当前数前加+
+		dfs(nums, cur + 1, target, tmp - nums[cur], count); //当前数前加-
+	}
+};
+class Solution {
+public:
+	//设在前面添加-的元素的元素和为neg，则在前面添加+的元素的元素和为sum-neg
+	//-neg+(sum-neg)=sum-2*neg=target
+	//neg=(sum-target)/2
+	int findTargetSumWays(vector<int>& nums, int target) {
+		int sum = 0;
+		for (const auto& num : nums) {
+			sum += num;
 		}
-		for (int i = 1; i < m; i++) {
-			for (int j = 1; j < n; j++) {
-				grid[i][j] += min(grid[i - 1][j], grid[i][j - 1]); //(i,j)可以从(i-1,j)或(i,j-1)到达，取较小值
+		if (sum - target < 0 || (sum - target) & 1) //因为nums是一个正整数数组，因此sum-target必须为非负偶数
+			return 0;
+		int neg = (sum - target) / 2;
+		int n = nums.size();
+		//dp[i][j]表示数组中前i个数能够构造出j的数目
+		vector<vector<int>> dp(n + 1, vector<int>(neg + 1, 0));
+		dp[0][0] = 1; //前0个数能构造出0，但不能构造出其他数
+		for (int i = 1; i <= n; i++) {
+			for (int j = 0; j <= neg; j++) {
+				if (nums[i - 1] > j) //前i个数的最后一个数的下标是i-1
+					dp[i][j] = dp[i - 1][j];
+				else
+					dp[i][j] = dp[i - 1][j] + dp[i - 1][j - nums[i - 1]];
 			}
 		}
-		return grid[m - 1][n - 1];
+		return dp[n][neg];
+	}
+};
+class Solution {
+public:
+	int findTargetSumWays(vector<int>& nums, int target) {
+		int sum = 0;
+		for (const auto& num : nums) {
+			sum += num;
+		}
+		int diff = sum - target;
+		if (diff < 0 || diff & 1)
+			return 0;
+		int neg = diff / 2;
+		int n = nums.size();
+		vector<int> dp(neg + 1, 0); //滚动数组
+		dp[0] = 1;
+		// for(int i = 1;i <= n;i++) {
+		//     for(int j = neg;j >= 0;j--) {
+		//         if(nums[i-1] > j)
+		//             dp[j] = dp[j];
+		//         else
+		//             dp[j] = dp[j] + dp[j-nums[i-1]];
+		//     }
+		// }
+		for (const auto& num : nums) {
+			for (int j = neg; j >= num; j--) { //注意内循环倒序
+				dp[j] = dp[j] + dp[j - num];
+			}
+		}
+		return dp[neg];
 	}
 };
