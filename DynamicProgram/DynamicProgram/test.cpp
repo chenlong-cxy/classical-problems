@@ -667,80 +667,180 @@
 //};
 
 
-//加减的目标值
-//回溯
+////加减的目标值
+////回溯
+//class Solution {
+//public:
+//	int findTargetSumWays(vector<int>& nums, int target) {
+//		int count = 0;
+//		dfs(nums, 0, target, 0, count);
+//		return count;
+//	}
+//	void dfs(const vector<int>& nums, int cur, int target, int tmp, int& count) {
+//		if (cur == nums.size()) {
+//			if (tmp == target)
+//				count++;
+//			return;
+//		}
+//		dfs(nums, cur + 1, target, tmp + nums[cur], count); //当前数前加+
+//		dfs(nums, cur + 1, target, tmp - nums[cur], count); //当前数前加-
+//	}
+//};
+//class Solution {
+//public:
+//	//设在前面添加-的元素的元素和为neg，则在前面添加+的元素的元素和为sum-neg
+//	//-neg+(sum-neg)=sum-2*neg=target
+//	//neg=(sum-target)/2
+//	int findTargetSumWays(vector<int>& nums, int target) {
+//		int sum = 0;
+//		for (const auto& num : nums) {
+//			sum += num;
+//		}
+//		if (sum - target < 0 || (sum - target) & 1) //因为nums是一个正整数数组，因此sum-target必须为非负偶数
+//			return 0;
+//		int neg = (sum - target) / 2;
+//		int n = nums.size();
+//		//dp[i][j]表示数组中前i个数能够构造出j的数目
+//		vector<vector<int>> dp(n + 1, vector<int>(neg + 1, 0));
+//		dp[0][0] = 1; //前0个数能构造出0，但不能构造出其他数
+//		for (int i = 1; i <= n; i++) {
+//			for (int j = 0; j <= neg; j++) {
+//				if (nums[i - 1] > j) //前i个数的最后一个数的下标是i-1
+//					dp[i][j] = dp[i - 1][j];
+//				else
+//					dp[i][j] = dp[i - 1][j] + dp[i - 1][j - nums[i - 1]];
+//			}
+//		}
+//		return dp[n][neg];
+//	}
+//};
+//class Solution {
+//public:
+//	int findTargetSumWays(vector<int>& nums, int target) {
+//		int sum = 0;
+//		for (const auto& num : nums) {
+//			sum += num;
+//		}
+//		int diff = sum - target;
+//		if (diff < 0 || diff & 1)
+//			return 0;
+//		int neg = diff / 2;
+//		int n = nums.size();
+//		vector<int> dp(neg + 1, 0); //滚动数组
+//		dp[0] = 1;
+//		// for(int i = 1;i <= n;i++) {
+//		//     for(int j = neg;j >= 0;j--) {
+//		//         if(nums[i-1] > j)
+//		//             dp[j] = dp[j];
+//		//         else
+//		//             dp[j] = dp[j] + dp[j-nums[i-1]];
+//		//     }
+//		// }
+//		for (const auto& num : nums) {
+//			for (int j = neg; j >= num; j--) { //注意内循环倒序
+//				dp[j] = dp[j] + dp[j - num];
+//			}
+//		}
+//		return dp[neg];
+//	}
+//};
+
+
+////最少硬币的数目
+////回溯
+//class Solution {
+//public:
+//	int coinChange(vector<int>& coins, int amount) {
+//		dfs(coins, 0, amount, 0);
+//		if (minCount == INT_MAX) //没有任何一种硬币组合能组成总金额
+//			return -1;
+//		else
+//			return minCount;
+//	}
+//	void dfs(vector<int>& coins, int cur, int target, int count) {
+//		if (target == 0) { //总金额组成完毕
+//			minCount = min(minCount, count);
+//			return;
+//		}
+//		if (cur == coins.size()) //所有面额的硬币均已被使用
+//			return;
+//		if (target - coins[cur] >= 0)
+//			dfs(coins, cur, target - coins[cur], count + 1); //考虑当前面额硬币
+//		dfs(coins, cur + 1, target, count); //不考虑当前面额硬币
+//	}
+//private:
+//	int minCount = INT_MAX;
+//};
+////动规+记忆化搜索（自顶向下）
+//class Solution {
+//public:
+//	int coinChange(vector<int>& coins, int amount) {
+//		vector<int> count(amount, 0); //记忆化搜索
+//		return dp(coins, amount, count);
+//	}
+//	//返回可以凑成amount所需的最少的硬币个数dp[amount-1]
+//	int dp(vector<int>& coins, int amount, vector<int>& count) {
+//		if (amount < 0) //无法组成
+//			return -1;
+//		if (amount == 0) //需要0个硬币
+//			return 0;
+//		if (count[amount - 1] != 0) //该值已经被计算过，直接返回
+//			return count[amount - 1];
+//		int minCount = INT_MAX;
+//		//f(amount) = f(amount-某个硬币值) + 1
+//		//枚举各个硬币值，找到dp[amount-某个硬币值]的最小值
+//		for (const auto& coin : coins) {
+//			int n = dp(coins, amount - coin, count);
+//			if (n != -1 && n + 1 < minCount)
+//				minCount = n + 1;
+//		}
+//		count[amount - 1] = minCount == INT_MAX ? -1 : minCount; //记录凑成amount所需的最少硬币个数
+//		return count[amount - 1];
+//	}
+//};
+////动规（自底向上）
+//class Solution {
+//public:
+//	int coinChange(vector<int>& coins, int amount) {
+//		//dp[i]表示凑成总金额i所需的最少硬币个数
+//		vector<int> dp(amount + 1, INT_MAX - 1); //避免INT_MAX+1溢出
+//		dp[0] = 0; //初始条件
+//		for (int i = 1; i <= amount; i++) {
+//			for (int j = 0; j < coins.size(); j++) {
+//				if (coins[j] <= i) //硬币的面额不大于要凑成的总金额，可以尝试使用
+//					dp[i] = min(dp[i], dp[i - coins[j]] + 1); //状态转移方程
+//			}
+//		}
+//		return dp[amount] == INT_MAX - 1 ? -1 : dp[amount];
+//	}
+//};
+
+
+//排列的数目
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main()
+{
+	vector<int> v = { 1, 2, 3 };
+	cout << Solution().combinationSum4(v, 4) << endl;
+
+	return 0;
+}
 class Solution {
 public:
-	int findTargetSumWays(vector<int>& nums, int target) {
-		int count = 0;
-		dfs(nums, 0, target, 0, count);
-		return count;
-	}
-	void dfs(const vector<int>& nums, int cur, int target, int tmp, int& count) {
-		if (cur == nums.size()) {
-			if (tmp == target)
-				count++;
-			return;
-		}
-		dfs(nums, cur + 1, target, tmp + nums[cur], count); //当前数前加+
-		dfs(nums, cur + 1, target, tmp - nums[cur], count); //当前数前加-
-	}
-};
-class Solution {
-public:
-	//设在前面添加-的元素的元素和为neg，则在前面添加+的元素的元素和为sum-neg
-	//-neg+(sum-neg)=sum-2*neg=target
-	//neg=(sum-target)/2
-	int findTargetSumWays(vector<int>& nums, int target) {
-		int sum = 0;
-		for (const auto& num : nums) {
-			sum += num;
-		}
-		if (sum - target < 0 || (sum - target) & 1) //因为nums是一个正整数数组，因此sum-target必须为非负偶数
-			return 0;
-		int neg = (sum - target) / 2;
-		int n = nums.size();
-		//dp[i][j]表示数组中前i个数能够构造出j的数目
-		vector<vector<int>> dp(n + 1, vector<int>(neg + 1, 0));
-		dp[0][0] = 1; //前0个数能构造出0，但不能构造出其他数
-		for (int i = 1; i <= n; i++) {
-			for (int j = 0; j <= neg; j++) {
-				if (nums[i - 1] > j) //前i个数的最后一个数的下标是i-1
-					dp[i][j] = dp[i - 1][j];
-				else
-					dp[i][j] = dp[i - 1][j] + dp[i - 1][j - nums[i - 1]];
+	int combinationSum4(vector<int>& nums, int target) {
+		//dp[i]表示组成i的元素组合的个数
+		vector<int> dp(target + 1, 0);
+		dp[0] = 1; //初始条件
+		for (int i = 1; i <= target; i++) {
+			//状态转移方程
+			for (const auto& num : nums) {
+				if (num <= i&&dp[i] < INT_MAX - dp[i - num]) //中间结果可能会越界
+					dp[i] += dp[i - num];
 			}
 		}
-		return dp[n][neg];
-	}
-};
-class Solution {
-public:
-	int findTargetSumWays(vector<int>& nums, int target) {
-		int sum = 0;
-		for (const auto& num : nums) {
-			sum += num;
-		}
-		int diff = sum - target;
-		if (diff < 0 || diff & 1)
-			return 0;
-		int neg = diff / 2;
-		int n = nums.size();
-		vector<int> dp(neg + 1, 0); //滚动数组
-		dp[0] = 1;
-		// for(int i = 1;i <= n;i++) {
-		//     for(int j = neg;j >= 0;j--) {
-		//         if(nums[i-1] > j)
-		//             dp[j] = dp[j];
-		//         else
-		//             dp[j] = dp[j] + dp[j-nums[i-1]];
-		//     }
-		// }
-		for (const auto& num : nums) {
-			for (int j = neg; j >= num; j--) { //注意内循环倒序
-				dp[j] = dp[j] + dp[j - num];
-			}
-		}
-		return dp[neg];
+		return dp[target];
 	}
 };
