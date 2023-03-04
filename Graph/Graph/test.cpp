@@ -416,157 +416,256 @@
 //}
 
 
-//开密码锁
-//广度优先搜索
+////开密码锁
+////广度优先搜索
+//class Solution {
+//public:
+//	int openLock(vector<string>& deadends, string target) {
+//		if (target == "0000") //解锁的数字就是初始数字，需要旋转0次
+//			return 0;
+//		unordered_set<string> dead(deadends.begin(), deadends.end());
+//		if (dead.count("0000")) //初始数字在死亡数字中，无法再被旋转
+//			return -1;
+//		//获取下一个字符
+//		auto nextNum = [](char ch)->char{
+//			return ch == '9' ? '0' : ch + 1;
+//		};
+//		//获取上一个字符
+//		auto prevNum = [](char ch)->char{
+//			return ch == '0' ? '9' : ch - 1;
+//		};
+//		//获取s通过一次旋转可以得到的数字
+//		auto getNextStatus = [&](string s)->vector<string>{
+//			vector<string> ret;
+//			for (int i = 0; i < 4; i++) {
+//				char cur = s[i];
+//				s[i] = nextNum(cur);
+//				ret.push_back(s);
+//				s[i] = prevNum(cur);
+//				ret.push_back(s);
+//				s[i] = cur; //改回去
+//			}
+//			return ret;
+//		};
+//		queue<pair<string, int>> q; //用于进行广度优先搜索
+//		q.emplace("0000", 0);
+//		unordered_set<string> seen; //存储所有搜索过的数字
+//		seen.insert("0000");
+//		while (!q.empty()) {
+//			auto[status, step] = q.front();
+//			q.pop();
+//			//将status通过一次旋转可以得到的数字入队列
+//			for (auto&& nextStatus : getNextStatus(status)) {
+//				if (nextStatus == target) //再旋转一次即可解锁
+//					return step + 1;
+//				if (!seen.count(nextStatus) && !dead.count(nextStatus)) { //该数字没有被搜索过，并且不是一个死亡数字
+//					q.emplace(nextStatus, step + 1); //入队列
+//					seen.insert(move(nextStatus)); //标记为搜索过
+//				}
+//			}
+//		}
+//		return -1; //无法解锁
+//	}
+//};
+////双向广度优先搜索
+//class Solution {
+//public:
+//	int openLock(vector<string>& deadends, string target) {
+//		if (target == "0000") //解锁的数字就是初始数字，需要旋转0次
+//			return 0;
+//		unordered_set<string> dead(deadends.begin(), deadends.end());
+//		if (dead.count("0000")) //初始数字在死亡数字中，无法再被旋转
+//			return -1;
+//		//获取下一个字符
+//		auto nextNum = [](char ch)->char{
+//			return ch == '9' ? '0' : ch + 1;
+//		};
+//		//获取上一个字符
+//		auto prevNum = [](char ch)->char{
+//			return ch == '0' ? '9' : ch - 1;
+//		};
+//		//获取s通过一次旋转可以得到的数字
+//		auto getNextStatus = [&](string s)->vector<string>{
+//			vector<string> ret;
+//			for (int i = 0; i < 4; i++) {
+//				char cur = s[i];
+//				s[i] = nextNum(cur);
+//				ret.push_back(s);
+//				s[i] = prevNum(cur);
+//				ret.push_back(s);
+//				s[i] = cur; //改回去
+//			}
+//			return ret;
+//		};
+//		queue<pair<string, int>> qBegin; //用于进行广度优先搜索
+//		qBegin.emplace("0000", 0);
+//		unordered_set<string> seenBegin; //存储所有搜索过的数字
+//		seenBegin.insert("0000");
+//
+//		queue<pair<string, int>> qEnd; //用于进行广度优先搜索
+//		qEnd.emplace(target, 0);
+//		unordered_set<string> seenEnd; //存储所有搜索过的数字
+//		seenEnd.insert(target);
+//
+//		while (!qBegin.empty() && !qEnd.empty()) {
+//			int beginSize = qBegin.size();
+//			for (int i = 0; i < beginSize; i++) {
+//				auto[status, step] = qBegin.front();
+//				qBegin.pop();
+//				if (seenEnd.count(status))
+//					return step + qEnd.front().second;
+//				//将status通过一次旋转可以得到的数字入队列
+//				for (auto&& nextStatus : getNextStatus(status)) {
+//					//if(nextStatus == target) //再旋转一次即可解锁
+//					//    return step+1;
+//					if (!seenBegin.count(nextStatus) && !dead.count(nextStatus)) { //该数字没有被搜索过，并且不是一个死亡数字
+//						qBegin.emplace(nextStatus, step + 1); //入队列
+//						seenBegin.insert(move(nextStatus)); //标记为搜索过
+//					}
+//				}
+//			}
+//			int endSize = qEnd.size();
+//			for (int i = 0; i < endSize; i++) {
+//				auto[status, step] = qEnd.front();
+//				qEnd.pop();
+//				if (seenBegin.count(status))
+//					return step + qBegin.front().second;
+//				//将status通过一次旋转可以得到的数字入队列
+//				for (auto&& nextStatus : getNextStatus(status)) {
+//					//if(nextStatus == "0000") //再旋转一次即可解锁
+//					//    return step+1;
+//					if (!seenEnd.count(nextStatus) && !dead.count(nextStatus)) { //该数字没有被搜索过，并且不是一个死亡数字
+//						qEnd.emplace(nextStatus, step + 1); //入队列
+//						seenEnd.insert(move(nextStatus)); //标记为搜索过
+//					}
+//				}
+//			}
+//		}
+//		return -1; //无法解锁
+//	}
+//};
+
+
+////所有路径
+////深度优先搜索
+//class Solution {
+//public:
+//	vector<vector<int>> allPathsSourceTarget(vector<vector<int>>& graph) {
+//		tmp.push_back(0);
+//		dfs(graph, 0);
+//		return ans;
+//	}
+//	void dfs(vector<vector<int>>& graph, int cur) {
+//		if (cur == graph.size() - 1) { //找到了一条路径
+//			ans.push_back(tmp);
+//			return;
+//		}
+//		for (auto nextNode : graph[cur]) {
+//			tmp.push_back(nextNode);
+//			dfs(graph, nextNode);
+//			tmp.pop_back(); //回溯
+//		}
+//	}
+//private:
+//	vector<vector<int>> ans;
+//	vector<int> tmp;
+//};
+
+
+//计算除法
 class Solution {
 public:
-	int openLock(vector<string>& deadends, string target) {
-		if (target == "0000") //解锁的数字就是初始数字，需要旋转0次
-			return 0;
-		unordered_set<string> dead(deadends.begin(), deadends.end());
-		if (dead.count("0000")) //初始数字在死亡数字中，无法再被旋转
-			return -1;
-		//获取下一个字符
-		auto nextNum = [](char ch)->char{
-			return ch == '9' ? '0' : ch + 1;
-		};
-		//获取上一个字符
-		auto prevNum = [](char ch)->char{
-			return ch == '0' ? '9' : ch - 1;
-		};
-		//获取s通过一次旋转可以得到的数字
-		auto getNextStatus = [&](string s)->vector<string>{
-			vector<string> ret;
-			for (int i = 0; i < 4; i++) {
-				char cur = s[i];
-				s[i] = nextNum(cur);
-				ret.push_back(s);
-				s[i] = prevNum(cur);
-				ret.push_back(s);
-				s[i] = cur; //改回去
+	vector<double> calcEquation(vector<vector<string>>& equations, vector<double>& values, vector<vector<string>>& queries) {
+		//建立各个变量与id的映射关系
+		int nodeNum = 0;
+		unordered_map<string, int> strId;
+		for (int i = 0; i < equations.size(); i++) {
+			if (!strId.count(equations[i][0])) {
+				strId[equations[i][0]] = nodeNum++;
 			}
-			return ret;
-		};
-		queue<pair<string, int>> q; //用于进行广度优先搜索
-		q.emplace("0000", 0);
-		unordered_set<string> seen; //存储所有搜索过的数字
-		seen.insert("0000");
-		while (!q.empty()) {
-			auto[status, step] = q.front();
-			q.pop();
-			//将status通过一次旋转可以得到的数字入队列
-			for (auto&& nextStatus : getNextStatus(status)) {
-				if (nextStatus == target) //再旋转一次即可解锁
-					return step + 1;
-				if (!seen.count(nextStatus) && !dead.count(nextStatus)) { //该数字没有被搜索过，并且不是一个死亡数字
-					q.emplace(nextStatus, step + 1); //入队列
-					seen.insert(move(nextStatus)); //标记为搜索过
-				}
+			if (!strId.count(equations[i][1])) {
+				strId[equations[i][1]] = nodeNum++;
 			}
 		}
-		return -1; //无法解锁
+		//建图（每个点之间的连接关系，及其连边对应的权值）
+		vector<vector<pair<int, double>>> edge(nodeNum);
+		for (int i = 0; i < equations.size(); i++) {
+			int id1 = strId[equations[i][0]], id2 = strId[equations[i][1]];
+			edge[id1].emplace_back(id2, values[i]); //a/b
+			edge[id2].emplace_back(id1, 1.0 / values[i]); //b/a
+		}
+		vector<double> ret; //结果
+		for (int i = 0; i < queries.size(); i++) {
+			string a = queries[i][0], b = queries[i][1];
+			if (!strId.count(a) || !strId.count(b)) { //给定的已知条件中没有出现字符串
+				ret.push_back(-1.0);
+			}
+			else {
+				int id1 = strId[a], id2 = strId[b];
+				//divRet[i]表示id1对应的字符串与i对应的字符串相除的结果
+				vector<double> divRet(nodeNum, -1.0); //初始化为-1.0（无法确定的答案用-1.0代替（可能不是连通图））
+				divRet[id1] = 1.0; //自己与自己相除结果为1.0
+				queue<int> q;
+				q.push(id1);
+				while (!q.empty() && divRet[id2] < 0) { //divRet[id2]小于0说明还需要继续广搜
+					int x = q.front();
+					q.pop();
+					//将与x相连并且没有遍历过的结点加入队列，并计算id1对应的字符串与其相除的结果
+					for (auto[y, val] : edge[x]) {
+						if (divRet[y] < 0) {
+							divRet[y] = divRet[x] * val; //(a/b) * (b/c) = a/c
+							q.push(y);
+						}
+					}
+				}
+				ret.push_back(divRet[id2]);
+			}
+		}
+		return ret;
 	}
 };
-//双向广度优先搜索
+//Floyd算法
 class Solution {
 public:
-	int openLock(vector<string>& deadends, string target) {
-		if (target == "0000") //解锁的数字就是初始数字，需要旋转0次
-			return 0;
-		unordered_set<string> dead(deadends.begin(), deadends.end());
-		if (dead.count("0000")) //初始数字在死亡数字中，无法再被旋转
-			return -1;
-		//获取下一个字符
-		auto nextNum = [](char ch)->char{
-			return ch == '9' ? '0' : ch + 1;
-		};
-		//获取上一个字符
-		auto prevNum = [](char ch)->char{
-			return ch == '0' ? '9' : ch - 1;
-		};
-		//获取s通过一次旋转可以得到的数字
-		auto getNextStatus = [&](string s)->vector<string>{
-			vector<string> ret;
-			for (int i = 0; i < 4; i++) {
-				char cur = s[i];
-				s[i] = nextNum(cur);
-				ret.push_back(s);
-				s[i] = prevNum(cur);
-				ret.push_back(s);
-				s[i] = cur; //改回去
+	vector<double> calcEquation(vector<vector<string>>& equations, vector<double>& values, vector<vector<string>>& queries) {
+		int nodeNum = 0;
+		unordered_map<string, int> strId;
+		for (int i = 0; i < equations.size(); i++) {
+			if (!strId.count(equations[i][0])) {
+				strId[equations[i][0]] = nodeNum++;
 			}
-			return ret;
-		};
-		queue<pair<string, int>> qBegin; //用于进行广度优先搜索
-		qBegin.emplace("0000", 0);
-		unordered_set<string> seenBegin; //存储所有搜索过的数字
-		seenBegin.insert("0000");
+			if (!strId.count(equations[i][1])) {
+				strId[equations[i][1]] = nodeNum++;
+			}
+		}
+		vector<vector<double>> graph(nodeNum, vector<double>(nodeNum, -1.0));
+		for (int i = 0; i < equations.size(); i++) {
+			int id1 = strId[equations[i][0]], id2 = strId[equations[i][1]];
+			graph[id1][id2] = values[i];
+			graph[id2][id1] = 1.0 / values[i];
+		}
 
-		queue<pair<string, int>> qEnd; //用于进行广度优先搜索
-		qEnd.emplace(target, 0);
-		unordered_set<string> seenEnd; //存储所有搜索过的数字
-		seenEnd.insert(target);
-
-		while (!qBegin.empty() && !qEnd.empty()) {
-			int beginSize = qBegin.size();
-			for (int i = 0; i < beginSize; i++) {
-				auto[status, step] = qBegin.front();
-				qBegin.pop();
-				if (seenEnd.count(status))
-					return step + qEnd.front().second;
-				//将status通过一次旋转可以得到的数字入队列
-				for (auto&& nextStatus : getNextStatus(status)) {
-					//if(nextStatus == target) //再旋转一次即可解锁
-					//    return step+1;
-					if (!seenBegin.count(nextStatus) && !dead.count(nextStatus)) { //该数字没有被搜索过，并且不是一个死亡数字
-						qBegin.emplace(nextStatus, step + 1); //入队列
-						seenBegin.insert(move(nextStatus)); //标记为搜索过
+		//预先计算出任意两点的距离（相除的值）
+		for (int k = 0; k < nodeNum; k++) {
+			for (int i = 0; i < nodeNum; i++) {
+				for (int j = 0; j < nodeNum; j++) {
+					if (graph[i][k] > 0 && graph[k][j] > 0) {
+						graph[i][j] = graph[i][k] * graph[k][j];
 					}
 				}
 			}
-			int endSize = qEnd.size();
-			for (int i = 0; i < endSize; i++) {
-				auto[status, step] = qEnd.front();
-				qEnd.pop();
-				if (seenBegin.count(status))
-					return step + qBegin.front().second;
-				//将status通过一次旋转可以得到的数字入队列
-				for (auto&& nextStatus : getNextStatus(status)) {
-					//if(nextStatus == "0000") //再旋转一次即可解锁
-					//    return step+1;
-					if (!seenEnd.count(nextStatus) && !dead.count(nextStatus)) { //该数字没有被搜索过，并且不是一个死亡数字
-						qEnd.emplace(nextStatus, step + 1); //入队列
-						seenEnd.insert(move(nextStatus)); //标记为搜索过
-					}
-				}
+		}
+		vector<double> ret;
+		for (int i = 0; i < queries.size(); i++) {
+			string a = queries[i][0], b = queries[i][1];
+			if (!strId.count(a) || !strId.count(b)) {
+				ret.push_back(-1.0);
+			}
+			else {
+				int id1 = strId[a], id2 = strId[b];
+				ret.push_back(graph[id1][id2]);
 			}
 		}
-		return -1; //无法解锁
+		return ret;
 	}
-};
-
-
-//所有路径
-//深度优先搜索
-class Solution {
-public:
-	vector<vector<int>> allPathsSourceTarget(vector<vector<int>>& graph) {
-		tmp.push_back(0);
-		dfs(graph, 0);
-		return ans;
-	}
-	void dfs(vector<vector<int>>& graph, int cur) {
-		if (cur == graph.size() - 1) { //找到了一条路径
-			ans.push_back(tmp);
-			return;
-		}
-		for (auto nextNode : graph[cur]) {
-			tmp.push_back(nextNode);
-			dfs(graph, nextNode);
-			tmp.pop_back(); //回溯
-		}
-	}
-private:
-	vector<vector<int>> ans;
-	vector<int> tmp;
 };
