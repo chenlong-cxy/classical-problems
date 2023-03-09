@@ -572,100 +572,144 @@
 //};
 
 
-//计算除法
-class Solution {
-public:
-	vector<double> calcEquation(vector<vector<string>>& equations, vector<double>& values, vector<vector<string>>& queries) {
-		//建立各个变量与id的映射关系
-		int nodeNum = 0;
-		unordered_map<string, int> strId;
-		for (int i = 0; i < equations.size(); i++) {
-			if (!strId.count(equations[i][0])) {
-				strId[equations[i][0]] = nodeNum++;
-			}
-			if (!strId.count(equations[i][1])) {
-				strId[equations[i][1]] = nodeNum++;
-			}
-		}
-		//建图（每个点之间的连接关系，及其连边对应的权值）
-		vector<vector<pair<int, double>>> edge(nodeNum);
-		for (int i = 0; i < equations.size(); i++) {
-			int id1 = strId[equations[i][0]], id2 = strId[equations[i][1]];
-			edge[id1].emplace_back(id2, values[i]); //a/b
-			edge[id2].emplace_back(id1, 1.0 / values[i]); //b/a
-		}
-		vector<double> ret; //结果
-		for (int i = 0; i < queries.size(); i++) {
-			string a = queries[i][0], b = queries[i][1];
-			if (!strId.count(a) || !strId.count(b)) { //给定的已知条件中没有出现字符串
-				ret.push_back(-1.0);
-			}
-			else {
-				int id1 = strId[a], id2 = strId[b];
-				//divRet[i]表示id1对应的字符串与i对应的字符串相除的结果
-				vector<double> divRet(nodeNum, -1.0); //初始化为-1.0（无法确定的答案用-1.0代替（可能不是连通图））
-				divRet[id1] = 1.0; //自己与自己相除结果为1.0
-				queue<int> q;
-				q.push(id1);
-				while (!q.empty() && divRet[id2] < 0) { //divRet[id2]小于0说明还需要继续广搜
-					int x = q.front();
-					q.pop();
-					//将与x相连并且没有遍历过的结点加入队列，并计算id1对应的字符串与其相除的结果
-					for (auto[y, val] : edge[x]) {
-						if (divRet[y] < 0) {
-							divRet[y] = divRet[x] * val; //(a/b) * (b/c) = a/c
-							q.push(y);
-						}
-					}
-				}
-				ret.push_back(divRet[id2]);
-			}
-		}
-		return ret;
-	}
-};
-//Floyd算法
-class Solution {
-public:
-	vector<double> calcEquation(vector<vector<string>>& equations, vector<double>& values, vector<vector<string>>& queries) {
-		int nodeNum = 0;
-		unordered_map<string, int> strId;
-		for (int i = 0; i < equations.size(); i++) {
-			if (!strId.count(equations[i][0])) {
-				strId[equations[i][0]] = nodeNum++;
-			}
-			if (!strId.count(equations[i][1])) {
-				strId[equations[i][1]] = nodeNum++;
-			}
-		}
-		vector<vector<double>> graph(nodeNum, vector<double>(nodeNum, -1.0));
-		for (int i = 0; i < equations.size(); i++) {
-			int id1 = strId[equations[i][0]], id2 = strId[equations[i][1]];
-			graph[id1][id2] = values[i];
-			graph[id2][id1] = 1.0 / values[i];
-		}
+////计算除法
+//class Solution {
+//public:
+//	vector<double> calcEquation(vector<vector<string>>& equations, vector<double>& values, vector<vector<string>>& queries) {
+//		//建立各个变量与id的映射关系
+//		int nodeNum = 0;
+//		unordered_map<string, int> strId;
+//		for (int i = 0; i < equations.size(); i++) {
+//			if (!strId.count(equations[i][0])) {
+//				strId[equations[i][0]] = nodeNum++;
+//			}
+//			if (!strId.count(equations[i][1])) {
+//				strId[equations[i][1]] = nodeNum++;
+//			}
+//		}
+//		//建图（每个点之间的连接关系，及其连边对应的权值）
+//		vector<vector<pair<int, double>>> edge(nodeNum);
+//		for (int i = 0; i < equations.size(); i++) {
+//			int id1 = strId[equations[i][0]], id2 = strId[equations[i][1]];
+//			edge[id1].emplace_back(id2, values[i]); //a/b
+//			edge[id2].emplace_back(id1, 1.0 / values[i]); //b/a
+//		}
+//		vector<double> ret; //结果
+//		for (int i = 0; i < queries.size(); i++) {
+//			string a = queries[i][0], b = queries[i][1];
+//			if (!strId.count(a) || !strId.count(b)) { //给定的已知条件中没有出现字符串
+//				ret.push_back(-1.0);
+//			}
+//			else {
+//				int id1 = strId[a], id2 = strId[b];
+//				//divRet[i]表示id1对应的字符串与i对应的字符串相除的结果
+//				vector<double> divRet(nodeNum, -1.0); //初始化为-1.0（无法确定的答案用-1.0代替（可能不是连通图））
+//				divRet[id1] = 1.0; //自己与自己相除结果为1.0
+//				queue<int> q;
+//				q.push(id1);
+//				while (!q.empty() && divRet[id2] < 0) { //divRet[id2]小于0说明还需要继续广搜
+//					int x = q.front();
+//					q.pop();
+//					//将与x相连并且没有遍历过的结点加入队列，并计算id1对应的字符串与其相除的结果
+//					for (auto[y, val] : edge[x]) {
+//						if (divRet[y] < 0) {
+//							divRet[y] = divRet[x] * val; //(a/b) * (b/c) = a/c
+//							q.push(y);
+//						}
+//					}
+//				}
+//				ret.push_back(divRet[id2]);
+//			}
+//		}
+//		return ret;
+//	}
+//};
+////Floyd算法
+//class Solution {
+//public:
+//	vector<double> calcEquation(vector<vector<string>>& equations, vector<double>& values, vector<vector<string>>& queries) {
+//		int nodeNum = 0;
+//		unordered_map<string, int> strId;
+//		for (int i = 0; i < equations.size(); i++) {
+//			if (!strId.count(equations[i][0])) {
+//				strId[equations[i][0]] = nodeNum++;
+//			}
+//			if (!strId.count(equations[i][1])) {
+//				strId[equations[i][1]] = nodeNum++;
+//			}
+//		}
+//		vector<vector<double>> graph(nodeNum, vector<double>(nodeNum, -1.0));
+//		for (int i = 0; i < equations.size(); i++) {
+//			int id1 = strId[equations[i][0]], id2 = strId[equations[i][1]];
+//			graph[id1][id2] = values[i];
+//			graph[id2][id1] = 1.0 / values[i];
+//		}
+//
+//		//预先计算出任意两点的距离（相除的值）
+//		for (int k = 0; k < nodeNum; k++) {
+//			for (int i = 0; i < nodeNum; i++) {
+//				for (int j = 0; j < nodeNum; j++) {
+//					if (graph[i][k] > 0 && graph[k][j] > 0) {
+//						graph[i][j] = graph[i][k] * graph[k][j];
+//					}
+//				}
+//			}
+//		}
+//		vector<double> ret;
+//		for (int i = 0; i < queries.size(); i++) {
+//			string a = queries[i][0], b = queries[i][1];
+//			if (!strId.count(a) || !strId.count(b)) {
+//				ret.push_back(-1.0);
+//			}
+//			else {
+//				int id1 = strId[a], id2 = strId[b];
+//				ret.push_back(graph[id1][id2]);
+//			}
+//		}
+//		return ret;
+//	}
+//};
 
-		//预先计算出任意两点的距离（相除的值）
-		for (int k = 0; k < nodeNum; k++) {
-			for (int i = 0; i < nodeNum; i++) {
-				for (int j = 0; j < nodeNum; j++) {
-					if (graph[i][k] > 0 && graph[k][j] > 0) {
-						graph[i][j] = graph[i][k] * graph[k][j];
-					}
-				}
+
+//最长递增路径
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+//记忆化深度优先搜索
+class Solution {
+public:
+	int longestIncreasingPath(vector<vector<int>>& matrix) {
+		int m = matrix.size(), n = matrix[0].size();
+		//maxPath[i][j]表示从(i,j)位置出发的最长递增路径
+		vector<vector<int>> maxPath(m, vector<int>(n, 0));
+		int ans = 0;
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				ans = max(ans, dfs(matrix, i, j, maxPath)); //找到每个位置的最长递增路径的最大值
 			}
 		}
-		vector<double> ret;
-		for (int i = 0; i < queries.size(); i++) {
-			string a = queries[i][0], b = queries[i][1];
-			if (!strId.count(a) || !strId.count(b)) {
-				ret.push_back(-1.0);
-			}
-			else {
-				int id1 = strId[a], id2 = strId[b];
-				ret.push_back(graph[id1][id2]);
-			}
-		}
-		return ret;
+		return ans;
 	}
+	int dfs(vector<vector<int>>& matrix, int x, int y, vector<vector<int>>& maxPath) {
+		if (maxPath[x][y] != 0) //该位置已经计算过
+			return maxPath[x][y];
+		//maxPath[x][y]等于周围值大于自己的各个位置中，最长递增路径最长的路径+1
+		for (int i = 0; i < 4; i++) {
+			int row = x + dirs[i][0], col = y + dirs[i][1];
+			if (row >= 0 && row<matrix.size() && col >= 0 && col<matrix[0].size() && matrix[row][col]>matrix[x][y]) {
+				maxPath[x][y] = max(maxPath[x][y], dfs(matrix, row, col, maxPath));
+			}
+		}
+		maxPath[x][y]++; //+1
+		return maxPath[x][y];
+	}
+private:
+	static constexpr int dirs[4][2] = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 } };
 };
+int main()
+{
+	vector<vector<int>> v = { { 9, 9, 4 }, { 6, 6, 8 }, { 2, 1, 1 } };
+	cout << Solution().longestIncreasingPath(v) << endl;
+	return 0;
+}
