@@ -695,17 +695,68 @@ public:
 		if (maxPath[x][y] != 0) //该位置已经计算过
 			return maxPath[x][y];
 		//maxPath[x][y]等于周围值大于自己的各个位置中，最长递增路径最长的路径+1
+		int maxLen = 0;
 		for (int i = 0; i < 4; i++) {
 			int row = x + dirs[i][0], col = y + dirs[i][1];
 			if (row >= 0 && row<matrix.size() && col >= 0 && col<matrix[0].size() && matrix[row][col]>matrix[x][y]) {
-				maxPath[x][y] = max(maxPath[x][y], dfs(matrix, row, col, maxPath));
+				maxLen = max(maxLen, dfs(matrix, row, col, maxPath));
 			}
 		}
-		maxPath[x][y]++; //+1
+		maxPath[x][y] = maxLen + 1;
 		return maxPath[x][y];
 	}
 private:
 	static constexpr int dirs[4][2] = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 } };
+};
+//拓扑排序
+class Solution {
+public:
+	int longestIncreasingPath(vector<vector<int>>& matrix) {
+		//1、计算每个位置的出度，即从该位置能往几个方向走
+		int m = matrix.size(), n = matrix[0].size();
+		vector<vector<int>> dp(m, vector<int>(n, 0));
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				for (int k = 0; k < 4; k++) {
+					int nx = i + dirs[k][0], ny = j + dirs[k][1];
+					if (nx >= 0 && nx < m&&ny >= 0 && ny < n&&matrix[nx][ny] > matrix[i][j])
+						dp[i][j]++; //出度++
+				}
+			}
+		}
+		//2、将出度为0的位置入队列（出度为0的为路线的终点）
+		queue<pair<int, int>> q;
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				if (dp[i][j] == 0)
+					q.push({ i, j });
+			}
+		}
+		//3、从出度为0的位置开始进行广搜，能搜几层则最长递增路径长度为几
+		int ans = 0;
+		while (!q.empty()) {
+			ans++;
+			//取出该层全部的位置进行广搜
+			int size = q.size();
+			for (int i = 0; i < size; i++) {
+				auto[x, y] = q.front();
+				q.pop();
+				//对于出度为0的位置的周围的位置来说，如果减去了该出度为0的位置的贡献后，其出度变为0
+				//则应该算作下一层广搜的位置，入队列
+				for (int j = 0; j < 4; j++) {
+					int nx = x + dirs[j][0], ny = y + dirs[j][1];
+					if (nx >= 0 && nx < m&&ny >= 0 && ny < n&&matrix[nx][ny] < matrix[x][y]) {
+						dp[nx][ny]--;
+						if (dp[nx][ny] == 0)
+							q.push({ nx, ny });
+					}
+				}
+			}
+		}
+		return ans;
+	}
+private:
+	static constexpr int dirs[4][2] = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
 };
 int main()
 {
@@ -713,3 +764,4 @@ int main()
 	cout << Solution().longestIncreasingPath(v) << endl;
 	return 0;
 }
+
