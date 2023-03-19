@@ -671,97 +671,180 @@
 //};
 
 
-//最长递增路径
-#include <iostream>
-#include <vector>
-#include <algorithm>
-using namespace std;
-//记忆化深度优先搜索
-class Solution {
-public:
-	int longestIncreasingPath(vector<vector<int>>& matrix) {
-		int m = matrix.size(), n = matrix[0].size();
-		//maxPath[i][j]表示从(i,j)位置出发的最长递增路径
-		vector<vector<int>> maxPath(m, vector<int>(n, 0));
-		int ans = 0;
-		for (int i = 0; i < m; i++) {
-			for (int j = 0; j < n; j++) {
-				ans = max(ans, dfs(matrix, i, j, maxPath)); //找到每个位置的最长递增路径的最大值
-			}
-		}
-		return ans;
-	}
-	int dfs(vector<vector<int>>& matrix, int x, int y, vector<vector<int>>& maxPath) {
-		if (maxPath[x][y] != 0) //该位置已经计算过
-			return maxPath[x][y];
-		//maxPath[x][y]等于周围值大于自己的各个位置中，最长递增路径最长的路径+1
-		int maxLen = 0;
-		for (int i = 0; i < 4; i++) {
-			int row = x + dirs[i][0], col = y + dirs[i][1];
-			if (row >= 0 && row<matrix.size() && col >= 0 && col<matrix[0].size() && matrix[row][col]>matrix[x][y]) {
-				maxLen = max(maxLen, dfs(matrix, row, col, maxPath));
-			}
-		}
-		maxPath[x][y] = maxLen + 1;
-		return maxPath[x][y];
-	}
-private:
-	static constexpr int dirs[4][2] = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 } };
-};
-//拓扑排序
-class Solution {
-public:
-	int longestIncreasingPath(vector<vector<int>>& matrix) {
-		//1、计算每个位置的出度，即从该位置能往几个方向走
-		int m = matrix.size(), n = matrix[0].size();
-		vector<vector<int>> dp(m, vector<int>(n, 0));
-		for (int i = 0; i < m; i++) {
-			for (int j = 0; j < n; j++) {
-				for (int k = 0; k < 4; k++) {
-					int nx = i + dirs[k][0], ny = j + dirs[k][1];
-					if (nx >= 0 && nx < m&&ny >= 0 && ny < n&&matrix[nx][ny] > matrix[i][j])
-						dp[i][j]++; //出度++
-				}
-			}
-		}
-		//2、将出度为0的位置入队列（出度为0的为路线的终点）
-		queue<pair<int, int>> q;
-		for (int i = 0; i < m; i++) {
-			for (int j = 0; j < n; j++) {
-				if (dp[i][j] == 0)
-					q.push({ i, j });
-			}
-		}
-		//3、从出度为0的位置开始进行广搜，能搜几层则最长递增路径长度为几
-		int ans = 0;
-		while (!q.empty()) {
-			ans++;
-			//取出该层全部的位置进行广搜
-			int size = q.size();
-			for (int i = 0; i < size; i++) {
-				auto[x, y] = q.front();
-				q.pop();
-				//对于出度为0的位置的周围的位置来说，如果减去了该出度为0的位置的贡献后，其出度变为0
-				//则应该算作下一层广搜的位置，入队列
-				for (int j = 0; j < 4; j++) {
-					int nx = x + dirs[j][0], ny = y + dirs[j][1];
-					if (nx >= 0 && nx < m&&ny >= 0 && ny < n&&matrix[nx][ny] < matrix[x][y]) {
-						dp[nx][ny]--;
-						if (dp[nx][ny] == 0)
-							q.push({ nx, ny });
-					}
-				}
-			}
-		}
-		return ans;
-	}
-private:
-	static constexpr int dirs[4][2] = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
-};
-int main()
-{
-	vector<vector<int>> v = { { 9, 9, 4 }, { 6, 6, 8 }, { 2, 1, 1 } };
-	cout << Solution().longestIncreasingPath(v) << endl;
-	return 0;
-}
+////最长递增路径
+//#include <iostream>
+//#include <vector>
+//#include <algorithm>
+//using namespace std;
+////记忆化深度优先搜索
+//class Solution {
+//public:
+//	int longestIncreasingPath(vector<vector<int>>& matrix) {
+//		int m = matrix.size(), n = matrix[0].size();
+//		//maxPath[i][j]表示从(i,j)位置出发的最长递增路径
+//		vector<vector<int>> maxPath(m, vector<int>(n, 0));
+//		int ans = 0;
+//		for (int i = 0; i < m; i++) {
+//			for (int j = 0; j < n; j++) {
+//				ans = max(ans, dfs(matrix, i, j, maxPath)); //找到每个位置的最长递增路径的最大值
+//			}
+//		}
+//		return ans;
+//	}
+//	int dfs(vector<vector<int>>& matrix, int x, int y, vector<vector<int>>& maxPath) {
+//		if (maxPath[x][y] != 0) //该位置已经计算过
+//			return maxPath[x][y];
+//		//maxPath[x][y]等于周围值大于自己的各个位置中，最长递增路径最长的路径+1
+//		int maxLen = 0;
+//		for (int i = 0; i < 4; i++) {
+//			int row = x + dirs[i][0], col = y + dirs[i][1];
+//			if (row >= 0 && row<matrix.size() && col >= 0 && col<matrix[0].size() && matrix[row][col]>matrix[x][y]) {
+//				maxLen = max(maxLen, dfs(matrix, row, col, maxPath));
+//			}
+//		}
+//		maxPath[x][y] = maxLen + 1;
+//		return maxPath[x][y];
+//	}
+//private:
+//	static constexpr int dirs[4][2] = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 } };
+//};
+////拓扑排序
+//class Solution {
+//public:
+//	int longestIncreasingPath(vector<vector<int>>& matrix) {
+//		//1、计算每个位置的出度，即从该位置能往几个方向走
+//		int m = matrix.size(), n = matrix[0].size();
+//		vector<vector<int>> dp(m, vector<int>(n, 0));
+//		for (int i = 0; i < m; i++) {
+//			for (int j = 0; j < n; j++) {
+//				for (int k = 0; k < 4; k++) {
+//					int nx = i + dirs[k][0], ny = j + dirs[k][1];
+//					if (nx >= 0 && nx < m&&ny >= 0 && ny < n&&matrix[nx][ny] > matrix[i][j])
+//						dp[i][j]++; //出度++
+//				}
+//			}
+//		}
+//		//2、将出度为0的位置入队列（出度为0的为路线的终点）
+//		queue<pair<int, int>> q;
+//		for (int i = 0; i < m; i++) {
+//			for (int j = 0; j < n; j++) {
+//				if (dp[i][j] == 0)
+//					q.push({ i, j });
+//			}
+//		}
+//		//3、从出度为0的位置开始进行广搜，能搜几层则最长递增路径长度为几
+//		int ans = 0;
+//		while (!q.empty()) {
+//			ans++;
+//			//取出该层全部的位置进行广搜
+//			int size = q.size();
+//			for (int i = 0; i < size; i++) {
+//				auto[x, y] = q.front();
+//				q.pop();
+//				//对于出度为0的位置的周围的位置来说，如果减去了该出度为0的位置的贡献后，其出度变为0
+//				//则应该算作下一层广搜的位置，入队列
+//				for (int j = 0; j < 4; j++) {
+//					int nx = x + dirs[j][0], ny = y + dirs[j][1];
+//					if (nx >= 0 && nx < m&&ny >= 0 && ny < n&&matrix[nx][ny] < matrix[x][y]) {
+//						dp[nx][ny]--;
+//						if (dp[nx][ny] == 0)
+//							q.push({ nx, ny });
+//					}
+//				}
+//			}
+//		}
+//		return ans;
+//	}
+//private:
+//	static constexpr int dirs[4][2] = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+//};
+//int main()
+//{
+//	vector<vector<int>> v = { { 9, 9, 4 }, { 6, 6, 8 }, { 2, 1, 1 } };
+//	cout << Solution().longestIncreasingPath(v) << endl;
+//	return 0;
+//}
 
+
+//课程顺序（拓扑排序）
+//深度优先搜索
+class Solution {
+public:
+	vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites) {
+		edges.resize(numCourses);
+		visited.resize(numCourses, 0);
+		valid = true;
+		//1、根据所给关系建立有向图
+		for (const auto& rel : prerequisites) {
+			edges[rel[1]].push_back(rel[0]);
+		}
+		//2、选一个未搜索的点开始进行深度优先搜索
+		for (int i = 0; i < numCourses&&valid; i++) {
+			if (visited[i] == 0) { //未搜索
+				dfs(i);
+			}
+		}
+		if (!valid) //成环
+			return vector<int>();
+		//栈顶到栈底的序列为拓扑排序
+		reverse(st.begin(), st.end());
+		return st;
+	}
+	void dfs(int u) {
+		visited[u] = 1; //标记为搜索中
+		//搜索相邻节点
+		for (const auto& v : edges[u]) {
+			if (visited[v] == 0) { //相邻节点未搜索
+				dfs(v); //深搜
+				if (!valid)
+					return;
+			}
+			else if (visited[v] == 1) { //相邻节点搜索中，说明成环
+				valid = false;
+				return;
+			}
+		}
+		visited[u] = 2; //标记为已搜索
+		st.push_back(u); //压入栈中
+	}
+private:
+	vector<vector<int>> edges; //存储有向图
+	vector<int> visited; //0表示未搜索，1表示搜索中，2表示已搜索
+	vector<int> st; //数组模拟栈
+	bool valid = true; //是否需要继续判断（如果成环则不必继续判断）
+};
+//广度优先搜索
+class Solution {
+public:
+	vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites) {
+		vector<vector<int>> edges(numCourses);
+		vector<int> inNum(numCourses, 0);
+		//1、根据所给关系建立有向图，并统计每个节点的入度
+		for (const auto& rel : prerequisites) {
+			edges[rel[1]].push_back(rel[0]);
+			inNum[rel[0]]++;
+		}
+		//2、将入度为0的节点入队列
+		queue<int> q;
+		for (int i = 0; i < numCourses; i++) {
+			if (inNum[i] == 0) {
+				q.push(i);
+			}
+		}
+		//3、依次拿出入度为0的节点，将该节点对应的边去掉，并将新出现的入度为0的节点入队列
+		vector<int> ans;
+		while (!q.empty()) {
+			int u = q.front();
+			q.pop();
+			ans.push_back(u);
+			for (const auto& v : edges[u]) {
+				inNum[v]--;
+				if (inNum[v] == 0)
+					q.push(v);
+			}
+		}
+		if (ans.size() != numCourses) //还有节点的入度不为0，说明成环
+			return vector<int>();
+		return ans;
+	}
+};
