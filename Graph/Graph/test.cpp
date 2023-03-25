@@ -766,85 +766,289 @@
 //}
 
 
-//课程顺序（拓扑排序）
-//深度优先搜索
-class Solution {
-public:
-	vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites) {
-		edges.resize(numCourses);
-		visited.resize(numCourses, 0);
-		valid = true;
-		//1、根据所给关系建立有向图
-		for (const auto& rel : prerequisites) {
-			edges[rel[1]].push_back(rel[0]);
-		}
-		//2、选一个未搜索的点开始进行深度优先搜索
-		for (int i = 0; i < numCourses&&valid; i++) {
-			if (visited[i] == 0) { //未搜索
-				dfs(i);
-			}
-		}
-		if (!valid) //成环
-			return vector<int>();
-		//栈顶到栈底的序列为拓扑排序
-		reverse(st.begin(), st.end());
-		return st;
-	}
-	void dfs(int u) {
-		visited[u] = 1; //标记为搜索中
-		//搜索相邻节点
-		for (const auto& v : edges[u]) {
-			if (visited[v] == 0) { //相邻节点未搜索
-				dfs(v); //深搜
-				if (!valid)
-					return;
-			}
-			else if (visited[v] == 1) { //相邻节点搜索中，说明成环
-				valid = false;
-				return;
-			}
-		}
-		visited[u] = 2; //标记为已搜索
-		st.push_back(u); //压入栈中
-	}
-private:
-	vector<vector<int>> edges; //存储有向图
-	vector<int> visited; //0表示未搜索，1表示搜索中，2表示已搜索
-	vector<int> st; //数组模拟栈
-	bool valid = true; //是否需要继续判断（如果成环则不必继续判断）
-};
+////课程顺序（拓扑排序）
+////深度优先搜索
+//class Solution {
+//public:
+//	vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites) {
+//		edges.resize(numCourses);
+//		visited.resize(numCourses, 0);
+//		valid = true;
+//		//1、根据所给关系建立有向图
+//		for (const auto& rel : prerequisites) {
+//			edges[rel[1]].push_back(rel[0]);
+//		}
+//		//2、选一个未搜索的点开始进行深度优先搜索
+//		for (int i = 0; i < numCourses&&valid; i++) {
+//			if (visited[i] == 0) { //未搜索
+//				dfs(i);
+//			}
+//		}
+//		if (!valid) //成环
+//			return vector<int>();
+//		//栈顶到栈底的序列为拓扑排序
+//		reverse(st.begin(), st.end());
+//		return st;
+//	}
+//	void dfs(int u) {
+//		visited[u] = 1; //标记为搜索中
+//		//搜索相邻节点
+//		for (const auto& v : edges[u]) {
+//			if (visited[v] == 0) { //相邻节点未搜索
+//				dfs(v); //深搜
+//				if (!valid)
+//					return;
+//			}
+//			else if (visited[v] == 1) { //相邻节点搜索中，说明成环
+//				valid = false;
+//				return;
+//			}
+//		}
+//		visited[u] = 2; //标记为已搜索
+//		st.push_back(u); //压入栈中
+//	}
+//private:
+//	vector<vector<int>> edges; //存储有向图
+//	vector<int> visited; //0表示未搜索，1表示搜索中，2表示已搜索
+//	vector<int> st; //数组模拟栈
+//	bool valid = true; //是否需要继续判断（如果成环则不必继续判断）
+//};
+////广度优先搜索
+//class Solution {
+//public:
+//	vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites) {
+//		vector<vector<int>> edges(numCourses);
+//		vector<int> inNum(numCourses, 0);
+//		//1、根据所给关系建立有向图，并统计每个节点的入度
+//		for (const auto& rel : prerequisites) {
+//			edges[rel[1]].push_back(rel[0]);
+//			inNum[rel[0]]++;
+//		}
+//		//2、将入度为0的节点入队列
+//		queue<int> q;
+//		for (int i = 0; i < numCourses; i++) {
+//			if (inNum[i] == 0) {
+//				q.push(i);
+//			}
+//		}
+//		//3、依次拿出入度为0的节点，将该节点对应的边去掉，并将新出现的入度为0的节点入队列
+//		vector<int> ans;
+//		while (!q.empty()) {
+//			int u = q.front();
+//			q.pop();
+//			ans.push_back(u);
+//			for (const auto& v : edges[u]) {
+//				inNum[v]--;
+//				if (inNum[v] == 0)
+//					q.push(v);
+//			}
+//		}
+//		if (ans.size() != numCourses) //还有节点的入度不为0，说明成环
+//			return vector<int>();
+//		return ans;
+//	}
+//};
+
+
+////外星文字典（拓扑排序）
+//#include <iostream>
+//#include <algorithm>
+//#include <vector>
+//#include <unordered_map>
+//#include <queue>
+//using namespace std;
+//////深度优先搜索
+////class Solution {
+////public:
+////	string alienOrder(vector<string>& words) {
+////		valid = true; //默认存在合法字母顺序
+////		//1、遍历所给字符串列表，得到所有出现过的字母
+////		for (const string& word : words) {
+////			for (const char& ch : word) {
+////				if (!edges.count(ch))
+////					edges[ch] = vector<char>();
+////			}
+////		}
+////		//2、根据字符串列表中各个相邻的字符串建立有向图
+////		int n = words.size();
+////		for (int i = 1; i < n && valid; i++) {
+////			addEdge(words[i - 1], words[i]);
+////		}
+////		if (valid == false)
+////			return "";
+////		//3、从有向图中选取一个节点开始进行深度优先搜索，直到所有节点都被搜索
+////		for (const auto [u, _] : edges) {
+////			if (!status.count(u)) {
+////				dfs(u);
+////			}
+////			if (valid == false)
+////				break;
+////		}
+////		if (valid == false)
+////			return "";
+////		//4、深度优先搜索得到的字符串翻转后即为拓扑排序
+////		reverse(ans.begin(), ans.end());
+////		return ans;
+////	}
+////	//根据两个相邻字符串向有向图中插入边
+////	void addEdge(const string& s1, const string& s2) {
+////		int len1 = s1.size(), len2 = s2.size();
+////		int len = min(len1, len2);
+////		int i = 0;
+////		while (i < len) {
+////			if (s1[i] != s2[i]) { //插入s1[i]到s2[i]的有向边
+////				edges[s1[i]].push_back(s2[i]);
+////				break; //两个相邻字符串只能确定两个字母的先后顺序
+////			}
+////			i++;
+////		}
+////		if (i == len && len1 > len2) //不存在合法解，比如ab和a
+////			valid = false;
+////	}
+////	//深度优先搜索
+////	void dfs(const char u) {
+////		status[u] = 1; //将节点u标记为搜索中
+////		for (const char& v : edges[u]) {
+////			if (!status.count(v)) { //节点v未搜索
+////				dfs(v);
+////				if (valid == false)
+////					return;
+////			}
+////			else if (status[v] == 1) { //节点v在搜索中，说明有向图成环
+////				valid = false;
+////				return;
+////			}
+////		}
+////		status[u] = 2; //将节点u标记为搜索完
+////		ans += u; //压入栈中
+////	}
+////private:
+////	unordered_map<char, vector<char>> edges; //存储有向图
+////	unordered_map<char, int> status; //标记每个节点的搜索状态
+////	bool valid; //是否有解
+////	string ans; //模拟栈
+////};
+//class Solution {
+//public:
+//	string alienOrder(vector<string>& words) {
+//		valid = true; //默认存在合法字母顺序
+//		//1、遍历所给字符串列表，得到所有出现过的字母
+//		for (const string& word : words) {
+//			for (const char& ch : word) {
+//				if (!edges.count(ch)) {
+//					edges[ch] = vector<char>();
+//					indegrees[ch] = 0; //字母的入度初始化为0
+//				}
+//			}
+//		}
+//		//2、根据字符串列表中各个相邻的字符串建立有向图
+//		int n = words.size();
+//		for (int i = 1; i < n && valid; i++) {
+//			addEdge(words[i - 1], words[i]);
+//		}
+//		if (valid == false)
+//			return "";
+//		//3、将入度为0的节点放入队列
+//		queue<char> q;
+//		for (const auto[ch, indegree] : indegrees) {
+//			if (indegree == 0)
+//				q.push(ch);
+//		}
+//		//4、依次拿出入度为0的节点，将该节点对应的边去掉，并将新出现的入度为0的节点放入队列
+//		string ans;
+//		while (!q.empty()) {
+//			char u = q.front();
+//			q.pop();
+//			for (const auto& v : edges[u]) {
+//				indegrees[v]--;
+//				if (indegrees[v] == 0)
+//					q.push(v);
+//			}
+//			ans += u;
+//		}
+//		if (ans.size() < edges.size()) //还有节点的入度不为0，说明成环（环中的节点不会加入拓扑排序）
+//			return "";
+//		return ans;
+//	}
+//	//根据两个相邻字符串向有向图中插入边
+//	void addEdge(const string& s1, const string& s2) {
+//		int len1 = s1.size(), len2 = s2.size();
+//		int len = min(len1, len2);
+//		int i = 0;
+//		while (i < len) {
+//			if (s1[i] != s2[i]) { //插入s1[i]到s2[i]的有向边
+//				edges[s1[i]].push_back(s2[i]);
+//				indegrees[s2[i]]++; //s2[i]节点的入度++
+//				break; //两个相邻字符串只能确定两个字母的先后顺序
+//			}
+//			i++;
+//		}
+//		if (i == len && len1 > len2) { //不存在合法解，比如ab和a
+//			valid = false;
+//		}
+//	}
+//private:
+//	unordered_map<char, vector<char>> edges; //存储有向图
+//	unordered_map<char, int> indegrees; //记录每个节点的入度
+//	bool valid; //是否有解
+//};
+//int main() {
+//	vector<string> v = { "wrt", "wrf", "wrft", "wrff" };
+//	cout << Solution().alienOrder(v) << endl;
+//	return 0;
+//}
+
+
+//重建序列（拓扑排序）
+#include <iostream>
+#include <unordered_set>
+#include <queue>
+#include <vector>
+using namespace std;
 //广度优先搜索
 class Solution {
 public:
-	vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites) {
-		vector<vector<int>> edges(numCourses);
-		vector<int> inNum(numCourses, 0);
-		//1、根据所给关系建立有向图，并统计每个节点的入度
-		for (const auto& rel : prerequisites) {
-			edges[rel[1]].push_back(rel[0]);
-			inNum[rel[0]]++;
-		}
-		//2、将入度为0的节点入队列
-		queue<int> q;
-		for (int i = 0; i < numCourses; i++) {
-			if (inNum[i] == 0) {
-				q.push(i);
+	bool sequenceReconstruction(vector<int>& nums, vector<vector<int>>& sequences) {
+		int n = nums.size();
+		vector<unordered_set<int>> edges(n + 1); //存储有向图
+		vector<int> indegrees(n + 1, 0); //记录每个节点的入度
+		//1、遍历sequences，建立有向图
+		for (const auto& sequence : sequences) {
+			for (int i = 1; i < sequence.size(); i++) {
+				int u = sequence[i - 1], v = sequence[i];
+				if (!edges[u].count(v)) { //防止重复插入
+					edges[u].insert(v); //插入u->v的边
+					indegrees[v]++; //v节点的入度++
+				}
 			}
 		}
-		//3、依次拿出入度为0的节点，将该节点对应的边去掉，并将新出现的入度为0的节点入队列
-		vector<int> ans;
+		//2、将入度为0的节点放入队列
+		queue<int> q;
+		for (int i = 1; i <= n; i++) {
+			if (indegrees[i] == 0)
+				q.push(i);
+		}
+		//3、依次拿出入度为0的节点，将该节点的边去掉，并将新出现的入度为0的节点放入队列
 		while (!q.empty()) {
+			//初始时入度为0的节点如果有多个，则说明nums中有数字没在sequences中出现过，因此nums肯定不是最短超序列
+			//后续如果出现队列中的元素个数大于一，则说明下一个数字有多种可能，因此nums不是唯一的最短超序列
+			//sequences中的每个序列都是nums的子序列，因此序列中不存在环
+			if (q.size() > 1)
+				return false;
 			int u = q.front();
 			q.pop();
-			ans.push_back(u);
 			for (const auto& v : edges[u]) {
-				inNum[v]--;
-				if (inNum[v] == 0)
+				indegrees[v]--;
+				if (indegrees[v] == 0)
 					q.push(v);
 			}
 		}
-		if (ans.size() != numCourses) //还有节点的入度不为0，说明成环
-			return vector<int>();
-		return ans;
+		return true;
 	}
 };
+int main() {
+	vector<int> nums = { 1, 2, 3 };
+	vector<vector<int>> sequences = { { 1, 2 }, { 1, 3 }, { 2, 3 } };
+	cout << Solution().sequenceReconstruction(nums, sequences) << endl;
+	return 0;
+}
