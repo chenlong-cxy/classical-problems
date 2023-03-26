@@ -999,56 +999,273 @@
 //}
 
 
-//重建序列（拓扑排序）
-#include <iostream>
-#include <unordered_set>
-#include <queue>
-#include <vector>
-using namespace std;
-//广度优先搜索
+////重建序列（拓扑排序）
+//#include <iostream>
+//#include <unordered_set>
+//#include <queue>
+//#include <vector>
+//using namespace std;
+////广度优先搜索
+//class Solution {
+//public:
+//	bool sequenceReconstruction(vector<int>& nums, vector<vector<int>>& sequences) {
+//		int n = nums.size();
+//		vector<unordered_set<int>> edges(n + 1); //存储有向图
+//		vector<int> indegrees(n + 1, 0); //记录每个节点的入度
+//		//1、遍历sequences，建立有向图
+//		for (const auto& sequence : sequences) {
+//			for (int i = 1; i < sequence.size(); i++) {
+//				int u = sequence[i - 1], v = sequence[i];
+//				if (!edges[u].count(v)) { //防止重复插入
+//					edges[u].insert(v); //插入u->v的边
+//					indegrees[v]++; //v节点的入度++
+//				}
+//			}
+//		}
+//		//2、将入度为0的节点放入队列
+//		queue<int> q;
+//		for (int i = 1; i <= n; i++) {
+//			if (indegrees[i] == 0)
+//				q.push(i);
+//		}
+//		//3、依次拿出入度为0的节点，将该节点的边去掉，并将新出现的入度为0的节点放入队列
+//		while (!q.empty()) {
+//			//初始时入度为0的节点如果有多个，则说明nums中有数字没在sequences中出现过，因此nums肯定不是最短超序列
+//			//后续如果出现队列中的元素个数大于一，则说明下一个数字有多种可能，因此nums不是唯一的最短超序列
+//			//sequences中的每个序列都是nums的子序列，因此序列中不存在环
+//			if (q.size() > 1)
+//				return false;
+//			int u = q.front();
+//			q.pop();
+//			for (const auto& v : edges[u]) {
+//				indegrees[v]--;
+//				if (indegrees[v] == 0)
+//					q.push(v);
+//			}
+//		}
+//		return true;
+//	}
+//};
+//int main() {
+//	vector<int> nums = { 1, 2, 3 };
+//	vector<vector<int>> sequences = { { 1, 2 }, { 1, 3 }, { 2, 3 } };
+//	cout << Solution().sequenceReconstruction(nums, sequences) << endl;
+//	return 0;
+//}
+
+
+////省份数量
+//#include <iostream>
+//#include <vector>
+//using namespace std;
+//////深度优先搜索
+////class Solution {
+////public:
+////	int findCircleNum(vector<vector<int>>& isConnected) {
+////		int cities = isConnected.size(); //节点的数量
+////		vector<bool> visited(cities, false); //记录每个节点是否被访问过
+////		int provinces = 0; //记录连通分量的数量
+////		for (int i = 0; i < cities; i++) {
+////			if (visited[i] == false) { //每次从一个未访问过的节点开始进行深搜
+////				dfs(isConnected, i, visited, cities);
+////				provinces++;
+////			}
+////		}
+////		return provinces;
+////	}
+////	void dfs(vector<vector<int>>& isConnected, int u, vector<bool>& visited, int cities) {
+////		visited[u] = true; //标记为访问过
+////		for (int i = 0; i < cities; i++) {
+////			if (isConnected[u][i] == 1 && visited[i] == false) //有连接，并且该节点没有被访问过
+////				dfs(isConnected, i, visited, cities);
+////		}
+////	}
+////};
+//////广度优先搜索
+////class Solution {
+////public:
+////	int findCircleNum(vector<vector<int>>& isConnected) {
+////		int cities = isConnected.size(); //节点的数量
+////		vector<bool> visited(cities, false); //记录每个节点是否被访问过
+////		int provinces = 0; //记录连通分量的数量
+////		for (int i = 0; i < cities; i++) {
+////			if (visited[i] == false) { //每次从一个未访问过的节点开始进行广搜
+////				queue<int> q;
+////				q.push(i);
+////				while (!q.empty()) {
+////					int u = q.front();
+////					visited[u] = true; //标记为访问过
+////					q.pop();
+////					for (int v = 0; v < cities; v++) {
+////						if (isConnected[u][v] == 1 && visited[v] == false) //有连接，并且该节点没有被访问过
+////							q.push(v);
+////					}
+////				}
+////				provinces++;
+////			}
+////		}
+////		return provinces;
+////	}
+////};
+////并查集
+//class Solution {
+//public:
+//	int findCircleNum(vector<vector<int>>& isConnected) {
+//		int cities = isConnected.size();
+//		vector<int> parent(cities);
+//		//1、将每个节点的父节点初始化为自己
+//		for (int i = 0; i < cities; i++) {
+//			parent[i] = i;
+//		}
+//		//2、根据所给关系建立并查集
+//		for (int i = 0; i < cities; i++) {
+//			for (int j = i + 1; j < cities; j++) {
+//				if (isConnected[i][j] == 1)
+//					unionCity(parent, i, j);
+//			}
+//		}
+//		//3、统计连通分量的数量，即父节点为自己的节点的个数
+//		int provinces = 0;
+//		for (int i = 0; i < cities; i++) {
+//			if (parent[i] == i)
+//				provinces++;
+//		}
+//		return provinces;
+//	}
+//	//将i和j所在的连通域合并
+//	void unionCity(vector<int>& parent, int i, int j) {
+//		parent[findRoot(parent, j)] = findRoot(parent, i); //将j所在树的根节点的父节点，改为i所在树的根节点
+//	}
+//	//返回i所在树的根节点
+//	int findRoot(vector<int>& parent, int i) {
+//		if (parent[i] == i) //根节点就是自己
+//			return i;
+//		return findRoot(parent, parent[i]); //根节点不是自己，继续看父节点是不是根节点
+//	}
+//};
+//int main() {
+//	vector<vector<int>> isConnected = { { 1, 0, 0, 1 }, { 0, 1, 1, 0 }, { 0, 1, 1, 1 }, { 1, 0, 1, 1 } };
+//	cout << Solution().findCircleNum(isConnected) << endl;
+//	return 0;
+//}
+
+
+////相似的字符串
+//#include <iostream>
+//#include <string>
+//#include <vector>
+//using namespace std;
+////并查集
+//class Solution {
+//public:
+//	int numSimilarGroups(vector<string>& strs) {
+//		int n = strs.size();
+//		vector<int> parent(n);
+//		//1、将每个节点的父节点初始化为自己
+//		for (int i = 0; i < n; i++) {
+//			parent[i] = i;
+//		}
+//		//2、根据所给字符串列表建立并查集
+//		for (int i = 0; i < n; i++) {
+//			for (int j = i + 1; j < n; j++) {
+//				//先找到两个字符串的根节点
+//				//如果根节点相同则无需判断这两个字符串是否相似
+//				int iRoot = findRoot(parent, i);
+//				int jRoot = findRoot(parent, j);
+//				if (iRoot == jRoot)
+//					continue;
+//				if (check(strs[i], strs[j]))
+//					parent[jRoot] = iRoot; //将j所在树的根节点的父节点，改为i所在树的根节点
+//			}
+//		}
+//		//3、统计连通分量的数量，即父节点为自己的节点的个数
+//		int groups = 0;
+//		for (int i = 0; i < n; i++) {
+//			if (parent[i] == i)
+//				groups++;
+//		}
+//		return groups;
+//	}
+//	//返回i节点所在树的根节点
+//	int findRoot(vector<int>& parent, int i) {
+//		return parent[i] == i ? i : findRoot(parent, parent[i]);
+//	}
+//	//检查两个字符串是否相似
+//	bool check(const string& s1, const string& s2) {
+//		int len = s1.size();
+//		int count = 0;
+//		for (int i = 0; i < len; i++) {
+//			if (s1[i] != s2[i]) {
+//				count++;
+//				if (count > 2)
+//					return false;
+//			}
+//		}
+//		return true;
+//	}
+//};
+//int main() {
+//	vector<string> strs = { "tars", "rats", "arts", "star" };
+//	cout << Solution().numSimilarGroups(strs) << endl;
+//	return 0;
+//}
+
+
+////多余的边
+////并查集
+//class Solution {
+//public:
+//	vector<int> findRedundantConnection(vector<vector<int>>& edges) {
+//		//n个节点的树中有n-1条边，题目给定的是在树种添加一条边后的图edges，因此edges中边的个数为n，即节点的个数
+//		int n = edges.size();
+//		vector<int> parent(n + 1); //节点编号为1到n，0号下标不用
+//		//1、将每个节点的父节点初始化为自己
+//		for (int i = 1; i <= n; i++) {
+//			parent[i] = i;
+//		}
+//		//2、根据所给关系建立并查集
+//		for (int i = 0; i < n; i++) {
+//			int u = edges[i][0], v = edges[i][1];
+//			int uRoot = findRoot(parent, u), vRoot = findRoot(parent, v);
+//			if (uRoot == vRoot) //u和v的根节点相同，说明这条边是多余的，由于多余的边只有一个，所以直接返回
+//				return vector<int>{u, v};
+//			parent[uRoot] = vRoot; //将u所在的树合并到v所在的树中
+//		}
+//		return vector<int>{};
+//	}
+//	//返回i所在树的根节点
+//	int findRoot(vector<int>& parent, int i) {
+//		return parent[i] == i ? i : findRoot(parent, parent[i]);
+//	}
+//};
+
+
+//最长连续序列
+//哈希表+跳过枚举
 class Solution {
 public:
-	bool sequenceReconstruction(vector<int>& nums, vector<vector<int>>& sequences) {
-		int n = nums.size();
-		vector<unordered_set<int>> edges(n + 1); //存储有向图
-		vector<int> indegrees(n + 1, 0); //记录每个节点的入度
-		//1、遍历sequences，建立有向图
-		for (const auto& sequence : sequences) {
-			for (int i = 1; i < sequence.size(); i++) {
-				int u = sequence[i - 1], v = sequence[i];
-				if (!edges[u].count(v)) { //防止重复插入
-					edges[u].insert(v); //插入u->v的边
-					indegrees[v]++; //v节点的入度++
+	int longestConsecutive(vector<int>& nums) {
+		//1、将数组中的树放入unordered_set容器中
+		unordered_set<int> numSet;
+		for (const auto& num : nums) {
+			numSet.insert(num);
+		}
+		//2、枚举最大长度
+		int maxLen = 0;
+		for (const auto& num : nums) {
+			//当数组中不存在num-1时才需要开始枚举，表示num是连续序列的第一个数
+			//因为从连续序列的非第一个数开始枚举，得到的连续序列的长度一定比从第一个数开始枚举的长度短
+			if (!numSet.count(num - 1)) {
+				int curNum = num;
+				int curLen = 1;
+				//从num开始往后枚举，若后面一个数在数组中则长度加一
+				while (numSet.count(curNum + 1)) {
+					curNum++;
+					curLen++;
 				}
+				maxLen = max(maxLen, curLen); //更新最大长度
 			}
 		}
-		//2、将入度为0的节点放入队列
-		queue<int> q;
-		for (int i = 1; i <= n; i++) {
-			if (indegrees[i] == 0)
-				q.push(i);
-		}
-		//3、依次拿出入度为0的节点，将该节点的边去掉，并将新出现的入度为0的节点放入队列
-		while (!q.empty()) {
-			//初始时入度为0的节点如果有多个，则说明nums中有数字没在sequences中出现过，因此nums肯定不是最短超序列
-			//后续如果出现队列中的元素个数大于一，则说明下一个数字有多种可能，因此nums不是唯一的最短超序列
-			//sequences中的每个序列都是nums的子序列，因此序列中不存在环
-			if (q.size() > 1)
-				return false;
-			int u = q.front();
-			q.pop();
-			for (const auto& v : edges[u]) {
-				indegrees[v]--;
-				if (indegrees[v] == 0)
-					q.push(v);
-			}
-		}
-		return true;
+		return maxLen;
 	}
 };
-int main() {
-	vector<int> nums = { 1, 2, 3 };
-	vector<vector<int>> sequences = { { 1, 2 }, { 1, 3 }, { 2, 3 } };
-	cout << Solution().sequenceReconstruction(nums, sequences) << endl;
-	return 0;
-}
